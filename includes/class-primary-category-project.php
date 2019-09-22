@@ -1,4 +1,5 @@
 <?php
+
 /**
  * References
  * https://developer.wordpress.org/reference/functions/add_meta_box/
@@ -34,11 +35,24 @@ class Primary_Category_Project
    */
   public function pcp_add_primary_cat_box()
   {
+
+    // https://wordpress.stackexchange.com/questions/73796/one-metabox-for-multiple-post-types
+    // get all custom post types
+    $post_types = get_post_types(
+      array(
+        'public' => true, // only get publically accessable post types
+        '_builtin' => false // remove builtin post types
+      )
+    );
+
+    // add buildin 'post' type to $post_types array
+    $post_types['post'] = 'post';
+
     add_meta_box(
       'primary-category-project',
       esc_html__('Select Primary Category'),
       array($this, 'pcp_render_meta_box_content'),
-      'post',
+      $post_types,
       'side',
       'high'
     );
@@ -69,7 +83,6 @@ class Primary_Category_Project
     );
 
     // Retrieve list of category objects.
-    // $post_categories = get_categories($args);
     $post_categories = get_the_category($post->ID);
 
     // Create the select box with category values to show in the meta box
@@ -93,10 +106,10 @@ class Primary_Category_Project
   public function pcp_save_primary_cat_box($post_id, $post)
   {
 
-    /*
-         * We need to verify this came from the our screen and with proper authorization,
-         * because save_post can be triggered at other times.
-         */
+    /**
+     * We need to verify this came from the our screen and with proper authorization,
+     * because save_post can be triggered at other times.
+     */
 
     // Check if our nonce is set.
     if (!isset($_POST['pcp_custom_meta_box_nonce'])) {
@@ -134,5 +147,4 @@ class Primary_Category_Project
       update_post_meta($post->ID, 'pcp_primary_category', $primary_category);
     }
   }
-
 }
